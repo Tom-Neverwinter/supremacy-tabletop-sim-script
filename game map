@@ -1,0 +1,99 @@
+-- Global variables
+local superpowers = {
+    "Confederacy of South America",
+    "Federation of African States",
+    "League of European Nations",
+    "People's Republic of China",
+    "United States of America",
+    "Union of Soviet Sovereign Republics"
+}
+
+local territories = {
+    -- Confederacy of South America
+    {name = "Argentina", superpower = "Confederacy of South America"},
+    {name = "Brazil", superpower = "Confederacy of South America"},
+    {name = "Peru", superpower = "Confederacy of South America"},
+    {name = "Venezuela", superpower = "Confederacy of South America"},
+    -- ... (Add all other territories)
+}
+
+local seas = {
+    {name = "North Atlantic", type = "international"},
+    {name = "South Atlantic", type = "international"},
+    -- ... (Add all other seas)
+}
+
+local ports = {
+    {name = "New York", territory = "Eastern U.S.A."},
+    {name = "Rio de Janeiro", territory = "Brazil"},
+    -- ... (Add all other ports)
+}
+
+local resources = {"Grain", "Oil", "Minerals"}
+
+function createGameBoard()
+    createWorldMap()
+    createMarket()
+    createPriceIndex()
+end
+
+function createWorldMap()
+    -- Use Tabletop Simulator's custom board or image functionality
+    -- to create the world map with correct territory divisions
+    
+    for _, territory in ipairs(territories) do
+        createTerritoryObject(territory)
+    end
+    
+    for _, sea in ipairs(seas) do
+        createSeaObject(sea)
+    end
+    
+    for _, port in ipairs(ports) do
+        createPortObject(port)
+    end
+end
+
+function createTerritoryObject(territory)
+    -- Create a clickable object for each territory
+    -- Set color based on superpower or neutral status
+    -- Add name label
+end
+
+function createSeaObject(sea)
+    -- Create sea areas with appropriate coloring
+    -- Light blue for territorial, dark blue for international
+end
+
+function createPortObject(port)
+    -- Create white dot objects for ports
+    -- Add click functionality for ship movement
+end
+
+function createMarket()
+    -- Create the colored scale at the top of the board
+    for _, resource in ipairs(resources) do
+        createResourceMarket(resource)
+    end
+end
+
+function createResourceMarket(resource)
+    -- Create a scale for each resource
+    -- Implement logic for price changes
+end
+
+function createPriceIndex()
+    -- Create the Price Index below the Market
+    -- Implement Bull Pen and Bear Pit indicators
+    -- Add logic for price updates
+end
+
+function updateMarketPrice(resource, action)
+    -- Update market price based on buy/sell actions
+    -- Handle Bull Pen and Bear Pit scenarios
+end
+
+function onLoad()
+    createGameBoard()
+    -- Other initialization functions...
+end
