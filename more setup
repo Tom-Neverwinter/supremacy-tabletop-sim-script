@@ -1,0 +1,206 @@
+-- Global variables
+local players = {}
+local resourceDeck = {}
+local marketPrices = {Grain = 0, Oil = 0, Minerals = 0}
+
+function setupGame()
+    appointRoles()
+    sortResourceCards()
+    chooseSuperpower()
+    dealAdditionalCards()
+    placeInitialForces()
+    placeBonusForces()
+    distributeMoney()
+    storeStartingResources()
+    storeBonusResources()
+    setPricesInMarket()
+end
+
+function appointRoles()
+    -- Prompt players to appoint Marshall and Banker
+end
+
+function sortResourceCards()
+    resourceDeck = createResourceDeck()
+    local superpowerPiles = splitSuperpowerCards(resourceDeck)
+    return superpowerPiles
+end
+
+function chooseSuperpower()
+    local dealer = selectDealer()
+    local superpowerPiles = sortResourceCards()
+    superpowerPiles = dealer:shuffleAndRearrange(superpowerPiles)
+    
+    local playerOrder = determinePlayerOrder(players)
+    for _, player in ipairs(playerOrder) do
+        if player ~= dealer then
+            local chosenPile = player:choosePile(superpowerPiles)
+            player.cards = table.slice(chosenPile, 1, 3)
+            table.remove(superpowerPiles, chosenPile)
+        end
+    end
+    
+    -- Dealer's turn
+    superpowerPiles = players[1]:shuffleAndRearrange(superpowerPiles)
+    dealer.cards = table.slice(superpowerPiles[1], 1, 3)
+    
+    -- Return remaining cards to deck
+    for _, pile in ipairs(superpowerPiles) do
+        for i = 4, #pile do
+            table.insert(resourceDeck, pile[i])
+        end
+    end
+end
+
+function dealAdditionalCards()
+    for i = 1, 3 do
+        for _, player in ipairs(players) do
+            local validCard = false
+            while not validCard do
+                local card = drawCard(resourceDeck)
+                if isValidCard(card, player) then
+                    table.insert(player.cards, card)
+                    validCard = true
+                else
+                    table.insert(resourceDeck, card)
+                    shuffleDeck(resourceDeck)
+                end
+            end
+        end
+    end
+end
+
+function placeInitialForces()
+    for _, player in ipairs(players) do
+        placeHomeArmies(player)
+        placeResourceArmies(player)
+        placeInitialNavies(player)
+    end
+end
+
+function placeBonusForces()
+    for _, player in ipairs(players) do
+        local bonusForces = player:chooseBonusForces(9)
+        placeBonusArmiesAndNavies(player, bonusForces)
+    end
+end
+
+function distributeMoney()
+    for _, player in ipairs(players) do
+        giveMoney(player, 7000) -- $7 billion
+    end
+end
+
+function storeStartingResources()
+    for _, player in ipairs(players) do
+        player.supplyCenter = {Grain = 3, Oil = 3, Minerals = 3}
+        player.meters = {BankLoans = 0, Nukes = 0, LStars = 0}
+    end
+end
+
+function storeBonusResources()
+    for _, player in ipairs(players) do
+        local bonusResources = player:chooseBonusResources(9)
+        for resource, amount in pairs(bonusResources) do
+            player.supplyCenter[resource] = player.supplyCenter[resource] + amount
+        end
+    end
+end
+
+function setPricesInMarket()
+    local dealer = getDealer(players)
+    for _, resource in ipairs({"Grain", "Oil", "Minerals"}) do
+        local roll = rollDice(2)
+        marketPrices[resource] = roll * 25 -- Assuming $25 million per spot
+    end
+end
+
+-- Utility functions
+
+function createResourceDeck()
+    local deck = {}
+    -- Add superpower companies (6 per superpower)
+    -- Add independent companies (24 total)
+    -- Add research cards (3 Nukes, 2 L-Star)
+    return deck
+end
+
+function splitSuperpowerCards(deck)
+    local superpowerPiles = {}
+    -- Split superpower cards into 6 piles
+    return superpowerPiles
+end
+
+function selectDealer()
+    -- Have players roll dice and select the highest roller as dealer
+end
+
+function determinePlayerOrder(players)
+    -- Have players roll dice and order them based on rolls
+end
+
+function isValidCard(card, player)
+    -- Check if the card is valid for the player (not in opponent's home territory, etc.)
+end
+
+function placeHomeArmies(player)
+    -- Place one army on each of the player's home territories
+end
+
+function placeResourceArmies(player)
+    -- Place one army on each foreign territory where the player has resources
+end
+
+function placeInitialNavies(player)
+    -- Place navies in light blue seas next to home territories with ports
+    -- Check for restrictions based on opponent-occupied territories
+end
+
+function placeBonusArmiesAndNavies(player, bonusForces)
+    -- Place bonus armies and navies according to player's choice
+end
+
+function giveMoney(player, amount)
+    -- Give money to the player in the specified denominations
+end
+
+-- Ranking system
+
+function rankPlayer(player)
+    if player.hasWon and (player.winCondition == "Supremacy" or player.winCondition == "Detente") then
+        if not player.firedNuke and not player.lostTerritoryToNuke then
+            return "5-Star General"
+        elseif not player.firedNuke and player.lostTerritoryToNuke then
+            return "4-Star General"
+        elseif player.capturedMostTerritories and player.destroyedSomeTerritories then
+            return "3-Star General"
+        elseif player.destroyedMostTerritories and player.capturedSomeTerritories then
+            return "2-Star General"
+        elseif player.destroyedAllTerritories and not player.capturedAnyTerritories then
+            return "1-Star General"
+        end
+    end
+    return "Unranked"
+end
+
+-- Main setup function
+
+function initializeGame()
+    setupGame()
+    for _, player in ipairs(players) do
+        player.rank = nil
+    end
+end
+
+-- End game function
+
+function endGame(winner)
+    winner.hasWon = true
+    winner.rank = rankPlayer(winner)
+    announceWinner(winner)
+end
+
+function announceWinner(winner)
+    print(winner.name .. " has won the game!")
+    print("Rank: " .. winner.rank)
+end
