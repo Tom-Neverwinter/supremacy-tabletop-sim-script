@@ -1,0 +1,137 @@
+-- Global variables
+local players = {}
+local resourceCards = {}
+local marketPrices = {Grain = 500, Oil = 500, Minerals = 500}
+local superpowers = {"Confederacy of South America", "Federation of African States", "League of European Nations", "People's Republic of China", "United States of America", "Union of Soviet Sovereign Republics"}
+
+function onLoad()
+    createSetupButton()
+end
+
+function createSetupButton()
+    -- Create a button to initiate the setup process
+end
+
+function setupGame()
+    appointRoles()
+    sortResourceCards()
+    chooseSuperpower()
+    placeArmiesAndNavies()
+    distributeStartingResources()
+    distributeMoney()
+    setPricesInMarket()
+end
+
+function appointRoles()
+    -- Prompt players to choose Marshall and Banker
+    -- This might require player input, so we'll use UI elements
+end
+
+function sortResourceCards()
+    -- Sort resource cards by superpower and type
+    for _, superpower in ipairs(superpowers) do
+        resourceCards[superpower] = {
+            Minerals = {},
+            Oil = {},
+            Grain = {}
+        }
+    end
+    
+    -- Populate resourceCards table
+    -- In actual implementation, you'd need to create these card objects in TTS
+end
+
+function chooseSuperpower()
+    -- Simulate dice rolls for players
+    -- Allow players to choose superpowers based on roll order
+    -- Assign chosen superpower to each player
+end
+
+function placeArmiesAndNavies()
+    for _, player in ipairs(players) do
+        distributeUnits(player)
+        placeInitialArmies(player)
+    end
+end
+
+function distributeUnits(player)
+    -- Give player their colored army and navy units
+end
+
+function placeInitialArmies(player)
+    -- Place one army on each of the player's home territories
+end
+
+function distributeStartingResources()
+    for _, player in ipairs(players) do
+        giveSupplyCenter(player)
+        setInitialResources(player)
+    end
+end
+
+function giveSupplyCenter(player)
+    -- Create and give supply center card to player
+end
+
+function setInitialResources(player)
+    -- Set initial resource levels on supply center
+    player.resources = {Grain = 3, Oil = 3, Minerals = 3}
+    updateSupplyCenterDisplay(player)
+end
+
+function distributeMoney()
+    for _, player in ipairs(players) do
+        giveMoney(player, 7000) -- $7 billion
+    end
+end
+
+function giveMoney(player, amount)
+    -- Distribute money to player
+    -- In TTS, this would involve spawning money objects
+end
+
+function setPricesInMarket()
+    for resource, price in pairs(marketPrices) do
+        setMarketPrice(resource, price)
+    end
+end
+
+function setMarketPrice(resource, price)
+    -- Set the market price for a resource
+    -- In TTS, this would involve moving a marker on the price index
+end
+
+function updateSupplyCenterDisplay(player)
+    -- Update the visual representation of the player's supply center
+end
+
+-- Tabletop Simulator specific functions
+
+function spawnResourceCard(cardData)
+    -- Spawn a resource card object in TTS
+end
+
+function spawnArmyUnit(color, position)
+    -- Spawn an army unit (cube) in TTS
+end
+
+function spawnNavyUnit(color, position)
+    -- Spawn a navy unit (oblong) in TTS
+end
+
+function spawnMoney(denomination, quantity, position)
+    -- Spawn money objects in TTS
+end
+
+function createMarketDisplay()
+    -- Create the market display in TTS
+end
+
+function createPriceIndexDisplay()
+    -- Create the price index display in TTS
+end
+
+-- Call setup function when the setup button is pressed
+function onSetupButtonClick()
+    setupGame()
+end
