@@ -1,0 +1,191 @@
+function conventionalBattleDrill(attacker, defender, attackingFrom, target)
+    local battleState = {
+        attacker = attacker,
+        defender = defender,
+        attackingFrom = attackingFrom,
+        target = target,
+        attackerForces = {},
+        defenderForces = {}
+    }
+
+    identifyTheaterOfWar(battleState)
+    deleteSupplies(battleState)
+    getDice(battleState)
+    rollDiceAndCountLosses(battleState)
+    moveReinforcements(battleState)
+    defenderCounterattack(battleState)
+
+    return battleState
+end
+
+function identifyTheaterOfWar(battleState)
+    -- Step A: Identify the Theater of War
+    -- This function would update the battleState with information about the front lines and target
+    battleState.frontLine = battleState.attackingFrom
+    -- Check if target is empty (Militia Rule)
+    battleState.isTargetEmpty = isZoneEmpty(battleState.target)
+end
+
+function deleteSupplies(battleState)
+    -- Step B: Delete (Remove) Supplies and Deploy Forces
+    local attackerDeleted = removeSupplies(battleState.attacker)
+    local defenderDeleted = removeSupplies(battleState.defender)
+
+    deployForces(battleState.attacker, battleState.attackingFrom, battleState.target)
+
+    battleState.attackerSuppliesRemoved = attackerDeleted
+    battleState.defenderSuppliesRemoved = defenderDeleted
+end
+
+function removeSupplies(player)
+    if player.supplyCenter.grain >= 1 and player.supplyCenter.oil >= 1 and player.supplyCenter.minerals >= 1 then
+        player.supplyCenter.grain = player.supplyCenter.grain - 1
+        player.supplyCenter.oil = player.supplyCenter.oil - 1
+        player.supplyCenter.minerals = player.supplyCenter.minerals - 1
+        return true
+    end
+    return false
+end
+
+function deployForces(player, from, to)
+    -- Move forces from 'from' to the border of 'to'
+    -- This would involve manipulating objects in TTS
+end
+
+function getDice(battleState)
+    -- Step C: Getting the Dice
+    battleState.attackerDice = 1
+    battleState.defenderDice = battleState.defenderSuppliesRemoved and 2 or 1
+
+    -- Fire Power Die
+    if countForces(battleState.attacker, battleState.attackingFrom) > countForces(battleState.defender, battleState.target) then
+        battleState.attackerDice = battleState.attackerDice + 1
+    elseif countForces(battleState.attacker, battleState.attackingFrom) < countForces(battleState.defender, battleState.target) then
+        battleState.defenderDice = battleState.defenderDice + 1
+    end
+
+    -- L-star Die
+    if countLStars(battleState.attacker) > countLStars(battleState.defender) then
+        battleState.attackerDice = battleState.attackerDice + 1
+    elseif countLStars(battleState.attacker) < countLStars(battleState.defender) then
+        battleState.defenderDice = battleState.defenderDice + 1
+    end
+end
+
+function rollDiceAndCountLosses(battleState)
+    -- Step D: Roll the Dice and Count the Losses
+    local attackerRoll = rollDice(battleState.attackerDice)
+    local defenderRoll = rollDice(battleState.defenderDice)
+
+    local attackerPoints = sum(attackerRoll)
+    local defenderPoints = sum(defenderRoll)
+
+    local attackerLosses = math.floor(defenderPoints / 3)
+    local defenderLosses = math.floor(attackerPoints / 3)
+
+    applyLosses(battleState.attacker, battleState.attackingFrom, attackerLosses)
+    applyLosses(battleState.defender, battleState.target, defenderLosses)
+
+    battleState.attackerLosses = attackerLosses
+    battleState.defenderLosses = defenderLosses
+
+    handleOccupation(battleState)
+end
+
+function handleOccupation(battleState)
+    if countForces(battleState.defender, battleState.target) == 0 then
+        -- Defender destroyed
+        occupyZone(battleState.attacker, battleState.target)
+        transferResourceCards(battleState.defender, battleState.attacker, battleState.target)
+    elseif countForces(battleState.attacker, battleState.attackingFrom) == 0 then
+        -- Attacker destroyed
+        occupyZone(battleState.defender, battleState.attackingFrom)
+        transferResourceCards(battleState.attacker, battleState.defender, battleState.attackingFrom)
+    elseif countForces(battleState.defender, battleState.target) == 0 and countForces(battleState.attacker, battleState.attackingFrom) == 0 then
+        -- Mutual destruction
+        occupyZone(battleState.attacker, battleState.target)
+        transferResourceCards(battleState.defender, battleState.attacker, battleState.target)
+        -- Attacker can also reinforce the zone they attacked from
+    end
+
+    checkLastHomeTerritory(battleState)
+end
+
+function moveReinforcements(battleState)
+    -- Step E: Move Reinforcements
+    movePlayerReinforcements(battleState.defender)
+    movePlayerReinforcements(battleState.attacker)
+end
+
+function movePlayerReinforcements(player)
+    -- Implement logic for moving reinforcements
+    -- This would involve UI prompts and object manipulation in TTS
+end
+
+function defenderCounterattack(battleState)
+    -- Step F: Defender May Counterattack
+    local counterattack = promptCounterattack(battleState.defender)
+    if counterattack then
+        -- Initiate a new battle drill for the counterattack
+        conventionalBattleDrill(battleState.defender, counterattack.target, counterattack.from, counterattack.to)
+    end
+end
+
+-- Utility functions
+
+function rollDice(number)
+    local results = {}
+    for i = 1, number do
+        table.insert(results, math.random(1, 6))
+    end
+    return results
+end
+
+function sum(t)
+    local total = 0
+    for _, v in ipairs(t) do
+        total = total + v
+    end
+    return total
+end
+
+function countForces(player, zone)
+    -- Count armies and navies in the given zone
+end
+
+function countLStars(player)
+    -- Count L-stars owned by the player
+end
+
+function applyLosses(player, zone, losses)
+    -- Remove forces from the zone based on losses
+end
+
+function occupyZone(player, zone)
+    -- Allow player to move forces into the captured zone
+end
+
+function transferResourceCards(fromPlayer, toPlayer, zone)
+    -- Transfer resource cards belonging to the captured zone
+end
+
+function checkLastHomeTerritory(battleState)
+    -- Check if the last home territory of a player has been captured
+    -- Implement "Spoils of War - The Capture" rule if applicable
+end
+
+function promptCounterattack(defender)
+    -- Prompt defender for counterattack decision and details
+    -- Return nil if no counterattack, or details if counterattack chosen
+end
+
+-- Main function to initiate a battle
+function initiateBattle(attacker, defender, attackingFrom, target)
+    local battleResult = conventionalBattleDrill(attacker, defender, attackingFrom, target)
+    updateGameState(battleResult)
+end
+
+function updateGameState(battleResult)
+    -- Update the game state based on the battle result
+    -- This would involve updating player resources, territories, forces, etc.
+end
