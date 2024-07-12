@@ -1,0 +1,197 @@
+-- Global variables
+local players = {}
+local currentStage = 0
+local playerSequence = {}
+
+function determinePlayerSequence(stage)
+    local interestedPlayers = getInterestedPlayers(stage)
+    if #interestedPlayers > 1 then
+        local rolls = {}
+        for _, player in ipairs(interestedPlayers) do
+            rolls[player] = rollDie()
+        end
+        table.sort(interestedPlayers, function(a, b) return rolls[a] > rolls[b] end)
+    end
+    placeCubesOnBoard(interestedPlayers, stage)
+    return interestedPlayers
+end
+
+function placeCubesOnBoard(players, stage)
+    -- Place cubes next to the stage on the board
+    -- This would involve manipulating objects in TTS
+end
+
+function playStage1()
+    paySalaries()
+    payBankLoans()
+end
+
+function paySalaries()
+    for _, player in ipairs(players) do
+        local salaryDue = calculateSalaryDue(player)
+        if player.money >= salaryDue then
+            player.money = player.money - salaryDue
+        else
+            handleUnpaidSalaries(player)
+        end
+    end
+end
+
+function calculateSalaryDue(player)
+    local salary = 0
+    salary = salary + (player.resourceCards * 50) -- $50 million per resource card
+    salary = salary + ((player.armies + player.navies) * 10) -- $10 million per military unit
+    return salary
+end
+
+function handleUnpaidSalaries(player)
+    -- Remove military units or disable resource cards if salaries aren't paid
+end
+
+function payBankLoans()
+    for _, player in ipairs(players) do
+        if player.bankLoan > 0 then
+            local interestDue = calculateInterest(player.bankLoan)
+            if player.money >= interestDue then
+                player.money = player.money - interestDue
+                -- Optionally allow paying back principal
+                local principalPayment = promptPrincipalPayment(player)
+                player.bankLoan = player.bankLoan - principalPayment
+                player.money = player.money - principalPayment
+            else
+                -- Handle unpaid interest
+            end
+        end
+    end
+end
+
+function playStage2()
+    for _, player in ipairs(players) do
+        transferProductionUnits(player)
+    end
+end
+
+function transferProductionUnits(player)
+    for _, card in ipairs(player.resourceCards) do
+        if card.salariesPaid then
+            player.supplyCenter[card.resourceType] = player.supplyCenter[card.resourceType] + card.productionUnits
+            -- Ensure supply center doesn't exceed maximum
+            player.supplyCenter[card.resourceType] = math.min(player.supplyCenter[card.resourceType], maxSupplyCenterCapacity)
+        end
+    end
+end
+
+function playStage3()
+    playerSequence = determinePlayerSequence(3)
+    sellResourcesToMarket()
+    sellResourcesToPlayers()
+end
+
+function sellResourcesToMarket()
+    for i = 1, #playerSequence do
+        local player = playerSequence[i]
+        local selling = true
+        while selling do
+            local resource, amount = promptSaleToMarket(player)
+            if resource and amount then
+                executeMarketSale(player, resource, amount)
+            else
+                selling = false
+            end
+        end
+    end
+end
+
+function executeMarketSale(player, resource, amount)
+    local price = getMarketPrice(resource)
+    player.supplyCenter[resource] = player.supplyCenter[resource] - amount
+    player.money = player.money + (price * amount)
+    updateMarketPrice(resource, -amount)
+end
+
+function sellResourcesToPlayers()
+    -- Implement player-to-player trading logic
+end
+
+function playStage4()
+    if currentRound == 1 then
+        print("Skipping attacks on the first turn.")
+        return
+    end
+
+    playerSequence = determinePlayerSequence(4)
+    for i = 1, #playerSequence do
+        local attacker = playerSequence[i]
+        local attacking = true
+        while attacking do
+            local target, unitType, amount = promptAttack(attacker)
+            if target and unitType and amount then
+                executeAttack(attacker, target, unitType, amount)
+                executeCounterattack(target, attacker)
+            else
+                attacking = false
+            end
+        end
+    end
+end
+
+function executeAttack(attacker, defender, unitType, amount)
+    -- Implement attack logic based on unit types and territories
+end
+
+function executeCounterattack(defender, attacker)
+    -- Implement counterattack logic
+end
+
+-- Utility functions
+
+function rollDie()
+    return math.random(1, 6)
+end
+
+function getInterestedPlayers(stage)
+    -- Return a list of players who want to participate in this stage
+end
+
+function promptPrincipalPayment(player)
+    -- Prompt player for how much principal they want to pay back
+end
+
+function promptSaleToMarket(player)
+    -- Prompt player for what resource and how much they want to sell
+end
+
+function getMarketPrice(resource)
+    -- Get current market price for the resource
+end
+
+function updateMarketPrice(resource, amount)
+    -- Update market price based on sales/purchases
+end
+
+function promptAttack(player)
+    -- Prompt player for attack details
+end
+
+-- Main game loop
+
+function playGame()
+    while not gameOver() do
+        currentRound = currentRound + 1
+        for stage = 1, 7 do
+            currentStage = stage
+            if stage <= 2 or #getInterestedPlayers(stage) > 0 then
+                playStage(stage)
+            end
+        end
+    end
+end
+
+function playStage(stage)
+    if stage == 1 then playStage1()
+    elseif stage == 2 then playStage2()
+    elseif stage == 3 then playStage3()
+    elseif stage == 4 then playStage4()
+    -- ... implement stages 5-7
+    end
+end
