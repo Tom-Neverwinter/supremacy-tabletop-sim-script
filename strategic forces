@@ -1,0 +1,168 @@
+function strategicBattleDrill(attacker, defender)
+    local battleState = {
+        attacker = attacker,
+        defender = defender,
+        targets = {},
+        nukes = 0,
+        champions = {},
+        lstarResults = {}
+    }
+
+    identifyTargetOfNuclearAttack(battleState)
+    declareTactics(battleState)
+    launchNukes(battleState)
+    lstarScreen(battleState)
+    defenderCounterattack(battleState)
+
+    return battleState
+end
+
+function identifyTargetOfNuclearAttack(battleState)
+    -- Step A: Identify Target of Nuclear Attack
+    battleState.targets = promptNuclearTargets(battleState.attacker)
+    for _, target in ipairs(battleState.targets) do
+        placeMushRoomCloud(target, "upsidedown")
+    end
+end
+
+function declareTactics(battleState)
+    -- Step B: Declare Tactics
+    battleState.tactic = promptTactics(battleState.attacker)
+    if battleState.tactic == "cluster" then
+        battleState.nukes = #battleState.targets
+    else
+        battleState.nukes = 1
+    end
+end
+
+function launchNukes(battleState)
+    -- Step C: Launch Nukes
+    for i = 1, battleState.nukes do
+        decrementNukeSupply(battleState.attacker)
+    end
+    battleState.champions = promptChampions(battleState.defender, battleState.nukes)
+end
+
+function lstarScreen(battleState)
+    -- Step D: L-star Screen
+    battleState.lstarResults.defender = rollLStars(battleState.defender, battleState.nukes)
+    for _, champion in ipairs(battleState.champions) do
+        battleState.lstarResults[champion] = rollLStars(champion, battleState.nukes - #battleState.lstarResults.defender.hits)
+    end
+
+    local totalHits = countTotalHits(battleState.lstarResults)
+    local nukesLanded = math.max(0, battleState.nukes - totalHits)
+
+    applyNuclearStrikes(battleState.targets, nukesLanded)
+end
+
+function defenderCounterattack(battleState)
+    -- Step E: Defender May Counterattack
+    local counterattack = promptCounterattack(battleState.defender)
+    if counterattack then
+        if counterattack.type == "conventional" then
+            conventionalBattleDrill(battleState.defender, counterattack.target, counterattack.from, counterattack.to)
+        else
+            strategicBattleDrill(battleState.defender, counterattack.target)
+        end
+    end
+end
+
+-- Utility functions
+
+function promptNuclearTargets(attacker)
+    -- Prompt attacker to select targets for nuclear attack
+    -- Return a list of target zones
+end
+
+function placeMushRoomCloud(target, orientation)
+    -- Place a mushroom cloud token on the target zone
+    -- This would involve manipulating objects in TTS
+end
+
+function promptTactics(attacker)
+    -- Prompt attacker to choose between "solo" and "cluster" tactics
+    -- Return the chosen tactic
+end
+
+function decrementNukeSupply(player)
+    -- Decrease the player's nuke supply by 1
+    player.nukes = player.nukes - 1
+end
+
+function promptChampions(defender, nukeCount)
+    -- Prompt other players to become champions
+    -- Return a list of players who chose to defend
+end
+
+function rollLStars(player, nukeCount)
+    local results = {hits = {}, misses = {}}
+    for i = 1, math.min(player.lStars, nukeCount) do
+        local roll = math.random(1, 6)
+        if (player == battleState.defender and roll <= 5) or (player ~= battleState.defender and roll <= 3) then
+            table.insert(results.hits, roll)
+        else
+            table.insert(results.misses, roll)
+        end
+    end
+    return results
+end
+
+function countTotalHits(lstarResults)
+    local totalHits = 0
+    for _, results in pairs(lstarResults) do
+        totalHits = totalHits + #results.hits
+    end
+    return totalHits
+end
+
+function applyNuclearStrikes(targets, nukesLanded)
+    for i = 1, nukesLanded do
+        if i <= #targets then
+            local target = targets[i]
+            if isTerritory(target) then
+                destroyTerritory(target)
+                placeMushRoomCloud(target, "rightside-up")
+            elseif isLightBlueSea(target) then
+                destroyUnitsInSea(target)
+                removeMushRoomCloud(target)
+            end
+        end
+    end
+end
+
+function destroyTerritory(territory)
+    -- Destroy all units and companies in the territory
+    -- Return companies to the resource deck
+    -- Mark territory as nuked and impassable
+end
+
+function destroyUnitsInSea(sea)
+    -- Destroy all units in the sea
+    -- Sea remains in play
+end
+
+function isTerritory(zone)
+    -- Check if the zone is a territory
+end
+
+function isLightBlueSea(zone)
+    -- Check if the zone is a light blue sea
+end
+
+function checkLastHomeTerritory(battleState)
+    -- Check if the last home territory of a player has been destroyed
+    -- Implement "Spoils of War - The Destruction" rule if applicable
+end
+
+-- Main function to initiate a strategic battle
+function initiateStrategicBattle(attacker, defender)
+    local battleResult = strategicBattleDrill(attacker, defender)
+    updateGameState(battleResult)
+    checkLastHomeTerritory(battleResult)
+end
+
+function updateGameState(battleResult)
+    -- Update the game state based on the battle result
+    -- This would involve updating player resources, territories, forces, etc.
+end
